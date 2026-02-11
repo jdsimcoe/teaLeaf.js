@@ -1,0 +1,67 @@
+{
+  "name": "tealeaf-js",
+  "version": "0.1.0",
+  "description": "Deterministic TeaLeaf renderer with PNG/SVG output and React components.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js",
+      "require": "./dist/core.cjs"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "import": "./dist/browser.js",
+      "require": "./dist/browser.cjs"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js",
+      "require": "./dist/react.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsup && node ./scripts/copy-types.mjs",
+    "prepublishOnly": "npm run build",
+    "playground:install": "npm --prefix ./playground install",
+    "playground:dev": "npm --prefix ./playground run dev",
+    "playground:build": "npm --prefix ./playground run build",
+    "playground:preview": "npm --prefix ./playground run preview",
+    "playground:audit": "npm --prefix ./playground audit",
+    "playground:audit:fix": "npm --prefix ./playground audit fix"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "devDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "keywords": [
+    "tealeaf",
+    "generative-art",
+    "react",
+    "svg",
+    "png"
+  ],
+  "license": "MIT"
+}

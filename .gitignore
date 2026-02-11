@@ -1,0 +1,11 @@
+*.elf
+*.bmp
+*.png
+.stack-work
+stack.yaml.lock
+stack.yaml
+server
+node_modules
+dist
+playground/node_modules
+playground/dist

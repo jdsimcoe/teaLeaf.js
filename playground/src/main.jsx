@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { Lock } from "lucide-react";
 
 import { TeaLeaf, useTeaLeaf } from "./tealeaf/react/index.js";
+import { getSeedTextFromLocation } from "./tealeaf/tealeaf-core.js";
 import { Checkbox } from "./components/ui/checkbox";
 import { ColorCombobox } from "./components/ui/color-combobox";
 import { Input } from "./components/ui/input";
@@ -17,11 +18,8 @@ import {
 import "./styles.css";
 
 function getSeedFromLocation() {
-  const raw = window.location.search || "";
-  if (raw && raw !== "?") {
-    return `tealeaf::${raw}`;
-  }
-  return "tealeaf::?playground";
+  const seedText = getSeedTextFromLocation({ search: window.location.search });
+  return seedText === "tealeaf::" ? "tealeaf::?playground" : seedText;
 }
 
 function toPositiveInt(value, fallback) {

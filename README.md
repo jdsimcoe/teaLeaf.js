@@ -11,6 +11,8 @@ npm install tealeaf-js
 ## Query Params
 
 - `format=png|svg` (default: `png`)
+- `variant=pixel|triangle` (default: `pixel`)
+- `triangleSize=<number>` triangle side in grid units (triangle variant only; default `max(2, round(gridSize / 24))`)
 - `width=<number>`
 - `height=<number>`
 - `color=<hex>` (example: `3b7a57`)
@@ -53,6 +55,26 @@ Explicit variants:
 <TeaLeaf.Root seedText="tealeaf::?hello" options={{ format: "svg" }}>
   <TeaLeaf.Svg />
 </TeaLeaf.Root>
+```
+
+## Variants
+
+- `pixel` (default): the original renderer — the thresholded field drawn as pixel runs.
+- `triangle`: the same field sampled onto an equilateral triangle lattice; each triangle is filled when the field at its centroid is above the threshold. Same seed, same shape, triangle primitives instead of pixels.
+
+```jsx
+<TeaLeaf.Root seedText="tealeaf::?hello" variant="triangle" triangleSize={14}>
+  <TeaLeaf.Svg />
+</TeaLeaf.Root>
+```
+
+Core API:
+
+```js
+import { createTeaLeafSvg, generateTeaLeafField } from "tealeaf-js/core";
+
+const field = generateTeaLeafField({ seedText: "tealeaf::?hello", gridSize: 64 });
+const svg = createTeaLeafSvg({ field, variant: "triangle", triangleSize: 3 });
 ```
 
 `TeaLeaf.Root` can also read URL params directly:

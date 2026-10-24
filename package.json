@@ -1,6 +1,6 @@
 {
   "name": "tealeaf-js",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Deterministic TeaLeaf renderer with PNG/SVG output and React components.",
   "type": "module",
   "sideEffects": false,

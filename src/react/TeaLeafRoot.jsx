@@ -5,6 +5,8 @@ import {
   DEFAULT_FORMAT,
   DEFAULT_FREQUENCY_CUTOFF,
   DEFAULT_GRID_SIZE,
+  DEFAULT_VARIANT,
+  VARIANTS,
   generateTeaLeafField,
   parseTeaLeafOptionsFromSearch,
 } from "../tealeaf-core.js";
@@ -12,6 +14,16 @@ import { TeaLeafContext } from "./TeaLeafContext.jsx";
 
 function sanitizeFormat(value) {
   return value === "svg" ? "svg" : "png";
+}
+
+function sanitizeVariant(value) {
+  return VARIANTS.includes(value) ? value : DEFAULT_VARIANT;
+}
+
+function toTriangleSize(value, fallback) {
+  if (value == null || value === "") return null;
+  const parsed = Number.parseFloat(String(value));
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 function normalizeHex(value, fallback) {
@@ -35,12 +47,16 @@ export function TeaLeafRoot({
   querySearch,
   gridSize = DEFAULT_GRID_SIZE,
   frequencyCutoff = DEFAULT_FREQUENCY_CUTOFF,
+  variant,
+  triangleSize,
 }) {
   const queryOptions =
     typeof querySearch === "string"
       ? parseTeaLeafOptionsFromSearch(querySearch, {
           gridSize,
           frequencyCutoff,
+          variant,
+          triangleSize,
         })
       : null;
 
@@ -48,6 +64,8 @@ export function TeaLeafRoot({
     color: DEFAULT_COLOR,
     bg: DEFAULT_BG,
     format: DEFAULT_FORMAT,
+    variant: variant ?? DEFAULT_VARIANT,
+    triangleSize: triangleSize ?? null,
     width: gridSize,
     height: gridSize,
     ...(queryOptions || {}),
@@ -59,6 +77,8 @@ export function TeaLeafRoot({
     color: normalizeHex(initial.color, DEFAULT_COLOR),
     bg: initial.bg === null ? null : normalizeHex(initial.bg, DEFAULT_BG),
     format: sanitizeFormat(initial.format),
+    variant: sanitizeVariant(initial.variant),
+    triangleSize: toTriangleSize(initial.triangleSize, null),
     width: toPositiveInt(initial.width, gridSize),
     height: toPositiveInt(initial.height, gridSize),
     gridSize,
@@ -84,6 +104,15 @@ export function TeaLeafRoot({
       },
       setFormat(format) {
         setState((current) => ({ ...current, format: sanitizeFormat(format) }));
+      },
+      setVariant(nextVariant) {
+        setState((current) => ({ ...current, variant: sanitizeVariant(nextVariant) }));
+      },
+      setTriangleSize(size) {
+        setState((current) => ({
+          ...current,
+          triangleSize: toTriangleSize(size, current.triangleSize),
+        }));
       },
       setColor(color) {
         setState((current) => ({
@@ -128,6 +157,17 @@ export function TeaLeafRoot({
           ...(nextOptions.format == null
             ? null
             : { format: sanitizeFormat(nextOptions.format) }),
+          ...(nextOptions.variant == null
+            ? null
+            : { variant: sanitizeVariant(nextOptions.variant) }),
+          ...(nextOptions.triangleSize === undefined
+            ? null
+            : {
+                triangleSize: toTriangleSize(
+                  nextOptions.triangleSize,
+                  current.triangleSize
+                ),
+              }),
           ...(nextOptions.color == null
             ? null
             : { color: normalizeHex(nextOptions.color, current.color) }),

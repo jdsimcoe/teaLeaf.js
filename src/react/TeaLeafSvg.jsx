@@ -13,8 +13,18 @@ export function TeaLeafSvg({ className, style, title = "TeaLeaf SVG" }) {
         bg: state.bg,
         width: state.width,
         height: state.height,
+        variant: state.variant,
+        triangleSize: state.triangleSize,
       }),
-    [field, state.color, state.bg, state.width, state.height]
+    [
+      field,
+      state.color,
+      state.bg,
+      state.width,
+      state.height,
+      state.variant,
+      state.triangleSize,
+    ]
   );
 
   return (

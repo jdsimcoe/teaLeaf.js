@@ -1,4 +1,4 @@
-import type { TeaLeafField, TeaLeafFormat, TeaLeafOptions } from "./core";
+import type { TeaLeafField, TeaLeafFormat, TeaLeafOptions, TeaLeafVariant } from "./core";
 
 export interface LocationLike {
   search?: string;
@@ -10,6 +10,8 @@ export interface ResolvedTeaLeafOptions extends TeaLeafOptions {
   color: string;
   bg: string | null;
   format: TeaLeafFormat;
+  variant: TeaLeafVariant;
+  triangleSize: number | null;
   width: number;
   height: number;
   gridSize: number;

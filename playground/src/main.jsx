@@ -30,7 +30,7 @@ function toPositiveInt(value, fallback) {
 }
 
 function TeaLeafControlsBar() {
-  const { state, setFormat, setColor, setBackground, setSize } = useTeaLeaf();
+  const { state, setFormat, setVariant, setColor, setBackground, setSize } = useTeaLeaf();
 
   return (
     <div className="flex flex-wrap items-end gap-4">
@@ -43,6 +43,19 @@ function TeaLeafControlsBar() {
           <SelectContent>
             <SelectItem value="png">PNG</SelectItem>
             <SelectItem value="svg">SVG</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex min-w-[140px] flex-col gap-2">
+        <Label htmlFor="variant">Variant</Label>
+        <Select value={state.variant} onValueChange={setVariant}>
+          <SelectTrigger id="variant" className="w-[140px]">
+            <SelectValue placeholder="Variant" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="pixel">Pixel</SelectItem>
+            <SelectItem value="triangle">Triangle</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -140,7 +153,7 @@ function App() {
             <header className="space-y-2">
               <h1 className="text-4xl tracking-tight">teaLeaf playground</h1>
               <p className="text-base text-zinc-600">
-                Configure output format, colors, and locked square size. Preview
+                Configure output format, variant, colors, and locked square size. Preview
                 updates live.
               </p>
             </header>

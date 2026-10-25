@@ -7,7 +7,9 @@ export interface TeaLeafState {
   bg: string | null;
   format: TeaLeafFormat;
   variant: TeaLeafVariant;
-  triangleSize: number | null;
+  triangleCount: number | null;
+  seam: number | null;
+  offOpacity: number | null;
   width: number;
   height: number;
   gridSize: number;
@@ -20,7 +22,7 @@ export interface TeaLeafSetOptionsInput {
   bg?: string | null;
   format?: TeaLeafFormat;
   variant?: TeaLeafVariant;
-  triangleSize?: number | null;
+  triangleCount?: number | null;
   width?: number;
   height?: number;
 }
@@ -31,7 +33,7 @@ export interface TeaLeafContextValue {
   setSeedText(seed: string): void;
   setFormat(format: TeaLeafFormat): void;
   setVariant(variant: TeaLeafVariant): void;
-  setTriangleSize(size: number | null): void;
+  setTriangleCount(count: number | null): void;
   setColor(color: string): void;
   setBackground(bg: string | null): void;
   setSize(width: number, height?: number): void;
@@ -47,7 +49,9 @@ export interface TeaLeafRootProps {
   gridSize?: number;
   frequencyCutoff?: number;
   variant?: TeaLeafVariant;
-  triangleSize?: number | null;
+  triangleCount?: number | null;
+  seam?: number;
+  offOpacity?: number;
   options?: TeaLeafSetOptionsInput;
 }
 

@@ -20,7 +20,7 @@ function sanitizeVariant(value) {
   return VARIANTS.includes(value) ? value : DEFAULT_VARIANT;
 }
 
-function toTriangleSize(value, fallback) {
+function toPositiveNumber(value, fallback) {
   if (value == null || value === "") return null;
   const parsed = Number.parseFloat(String(value));
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
@@ -48,7 +48,9 @@ export function TeaLeafRoot({
   gridSize = DEFAULT_GRID_SIZE,
   frequencyCutoff = DEFAULT_FREQUENCY_CUTOFF,
   variant,
-  triangleSize,
+  triangleCount,
+  seam,
+  offOpacity,
 }) {
   const queryOptions =
     typeof querySearch === "string"
@@ -56,7 +58,7 @@ export function TeaLeafRoot({
           gridSize,
           frequencyCutoff,
           variant,
-          triangleSize,
+          triangleCount,
         })
       : null;
 
@@ -65,7 +67,9 @@ export function TeaLeafRoot({
     bg: DEFAULT_BG,
     format: DEFAULT_FORMAT,
     variant: variant ?? DEFAULT_VARIANT,
-    triangleSize: triangleSize ?? null,
+    triangleCount: triangleCount ?? null,
+    seam: seam ?? null,
+    offOpacity: offOpacity ?? null,
     width: gridSize,
     height: gridSize,
     ...(queryOptions || {}),
@@ -78,7 +82,12 @@ export function TeaLeafRoot({
     bg: initial.bg === null ? null : normalizeHex(initial.bg, DEFAULT_BG),
     format: sanitizeFormat(initial.format),
     variant: sanitizeVariant(initial.variant),
-    triangleSize: toTriangleSize(initial.triangleSize, null),
+    triangleCount: toPositiveNumber(initial.triangleCount, null),
+    seam: typeof initial.seam === "number" && initial.seam >= 0 ? initial.seam : null,
+    offOpacity:
+      typeof initial.offOpacity === "number" && initial.offOpacity >= 0
+        ? Math.min(1, initial.offOpacity)
+        : null,
     width: toPositiveInt(initial.width, gridSize),
     height: toPositiveInt(initial.height, gridSize),
     gridSize,
@@ -108,10 +117,10 @@ export function TeaLeafRoot({
       setVariant(nextVariant) {
         setState((current) => ({ ...current, variant: sanitizeVariant(nextVariant) }));
       },
-      setTriangleSize(size) {
+      setTriangleCount(count) {
         setState((current) => ({
           ...current,
-          triangleSize: toTriangleSize(size, current.triangleSize),
+          triangleCount: toPositiveNumber(count, current.triangleCount),
         }));
       },
       setColor(color) {
@@ -160,12 +169,12 @@ export function TeaLeafRoot({
           ...(nextOptions.variant == null
             ? null
             : { variant: sanitizeVariant(nextOptions.variant) }),
-          ...(nextOptions.triangleSize === undefined
+          ...(nextOptions.triangleCount === undefined
             ? null
             : {
-                triangleSize: toTriangleSize(
-                  nextOptions.triangleSize,
-                  current.triangleSize
+                triangleCount: toPositiveNumber(
+                  nextOptions.triangleCount,
+                  current.triangleCount
                 ),
               }),
           ...(nextOptions.color == null

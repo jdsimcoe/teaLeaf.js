@@ -1,5 +1,5 @@
 export type TeaLeafFormat = "png" | "svg";
-export type TeaLeafVariant = "pixel" | "triangle";
+export type TeaLeafVariant = "pixel" | "triangle" | "triangle-panels";
 
 /** Triangle vertices as [x0, y0, x1, y1, x2, y2] in grid units (y down). */
 export type TeaLeafTriangle = [number, number, number, number, number, number];
@@ -23,8 +23,8 @@ export interface ParseTeaLeafDefaults {
   bg?: string | null;
   format?: TeaLeafFormat;
   variant?: TeaLeafVariant;
-  /** Triangle side length in grid units (triangle variant only). Defaults to max(2, round(gridSize / 24)). */
-  triangleSize?: number | null;
+  /** Triangles across the canvas (triangle variants only). Defaults to 6. */
+  triangleCount?: number | null;
   width?: number;
   height?: number;
   gridSize?: number;
@@ -48,7 +48,16 @@ export interface CreateTeaLeafSvgInput {
   width?: number;
   height?: number;
   variant?: TeaLeafVariant;
-  triangleSize?: number | null;
+  triangleCount?: number | null;
+  /** Seam between panels as a fraction of the triangle side ("triangle-panels" only). Defaults to 0.06. */
+  seam?: number;
+  /** Opacity of the foreground color on "off" panels ("triangle-panels" only). Defaults to 0.14. */
+  offOpacity?: number;
+}
+
+export interface TeaLeafTrianglePanel {
+  points: TeaLeafTriangle;
+  on: boolean;
 }
 
 export interface DrawTeaLeafToCanvasInput extends CreateTeaLeafSvgInput {
@@ -62,6 +71,9 @@ export declare const DEFAULT_FREQUENCY_CUTOFF: 5;
 export declare const DEFAULT_GRID_SIZE: 420;
 export declare const DEFAULT_VARIANT: "pixel";
 export declare const VARIANTS: readonly TeaLeafVariant[];
+export declare const DEFAULT_TRIANGLE_COUNT: 6;
+export declare const DEFAULT_PANEL_SEAM: 0.06;
+export declare const DEFAULT_PANEL_OFF_OPACITY: 0.14;
 
 export declare function seedFromString(text: string): number;
 
@@ -74,16 +86,21 @@ export declare function parseTeaLeafOptionsFromSearch(
   search?: string,
   defaults?: ParseTeaLeafDefaults
 ): Required<Pick<TeaLeafOptions, "color" | "bg" | "format" | "variant" | "width" | "height" | "gridSize" | "frequencyCutoff">> & {
-  triangleSize: number | null;
+  triangleCount: number | null;
 };
 
 export declare function generateTeaLeafField(input: GenerateTeaLeafFieldInput): TeaLeafField;
 
 export declare function buildTeaLeafRuns(field: TeaLeafField): TeaLeafRun[];
 
+export declare function buildTeaLeafTrianglePanels(
+  field: TeaLeafField,
+  options?: { triangleCount?: number | null }
+): TeaLeafTrianglePanel[];
+
 export declare function buildTeaLeafTriangles(
   field: TeaLeafField,
-  options?: { triangleSize?: number | null }
+  options?: { triangleCount?: number | null }
 ): TeaLeafTriangle[];
 
 export declare function createTeaLeafSvg(input: CreateTeaLeafSvgInput): string;

@@ -4,7 +4,10 @@ const DEFAULT_COLOR = "#000000";
 const DEFAULT_BG = null;
 const DEFAULT_FORMAT = "png";
 const DEFAULT_VARIANT = "pixel";
-const VARIANTS = ["pixel", "triangle"];
+const VARIANTS = ["pixel", "triangle", "triangle-panels"];
+const DEFAULT_TRIANGLE_COUNT = 6;
+const DEFAULT_PANEL_SEAM = 0.06;
+const DEFAULT_PANEL_OFF_OPACITY = 0.14;
 
 function nextPow2(n) {
   let p = 1;
@@ -226,7 +229,7 @@ function stripSeedParams(raw) {
       !part.startsWith("height=") &&
       !part.startsWith("scale=") &&
       !part.startsWith("variant=") &&
-      !part.startsWith("triangleSize=")
+      !part.startsWith("triangles=")
   );
   if (filtered.length === 0) return "?";
   return `?${filtered.join("&")}`;
@@ -295,8 +298,8 @@ function parseTeaLeafOptionsFromSearch(search, defaults = {}) {
   const format = parseFormat(params.get("format") || defaults.format || DEFAULT_FORMAT);
 
   const variant = parseVariant(params.get("variant") || defaults.variant);
-  const triangleSize =
-    parsePositiveNumber(params.get("triangleSize")) ?? defaults.triangleSize ?? null;
+  const triangleCount =
+    parsePositiveNumber(params.get("triangles")) ?? defaults.triangleCount ?? null;
 
   const scale = Number.parseFloat(params.get("scale") || "");
   const parsedScale = Number.isFinite(scale) && scale > 0 ? scale : null;
@@ -318,7 +321,7 @@ function parseTeaLeafOptionsFromSearch(search, defaults = {}) {
     bg,
     format,
     variant,
-    triangleSize,
+    triangleCount,
     width,
     height,
     gridSize: defaults.gridSize ?? DEFAULT_GRID_SIZE,
@@ -392,10 +395,6 @@ export function buildTeaLeafRuns(field) {
   return runs;
 }
 
-function defaultTriangleSize(gridSize) {
-  return Math.max(2, Math.round(gridSize / 24));
-}
-
 function sampleField(field, x, y) {
   const { outRe, gridSize: n } = field;
   // (x, y) are output coordinates (y down); the field is stored bottom-up and tiles seamlessly.
@@ -415,21 +414,28 @@ function sampleField(field, x, y) {
   return top * (1 - ty) + bottom * ty;
 }
 
-export function buildTeaLeafTriangles(field, { triangleSize } = {}) {
+function resolveTriangleCount(triangleCount) {
+  return triangleCount > 0 ? triangleCount : DEFAULT_TRIANGLE_COUNT;
+}
+
+export function buildTeaLeafTrianglePanels(field, { triangleCount } = {}) {
   const n = field.gridSize;
-  const side = triangleSize > 0 ? triangleSize : defaultTriangleSize(n);
+  const side = n / resolveTriangleCount(triangleCount);
   const rowHeight = (side * Math.sqrt(3)) / 2;
-  const rows = Math.ceil(n / rowHeight);
-  const cols = Math.ceil(n / side) + 2;
-  const triangles = [];
+  const center = n / 2;
+  const rowsPerHalf = Math.ceil(center / rowHeight) + 1;
+  const colsPerHalf = Math.ceil(center / side) + 1;
+  const panels = [];
 
-  for (let row = 0; row < rows; row += 1) {
-    const top = row * rowHeight;
+  // Centered lattice: a shared vertex sits at the middle of the canvas.
+  for (let row = -rowsPerHalf; row < rowsPerHalf; row += 1) {
+    const top = center + row * rowHeight;
     const bottom = top + rowHeight;
-    const offset = (row % 2) * (side / 2) - side;
+    if (bottom <= 0 || top >= n) continue;
+    const offset = (((row % 2) + 2) % 2) * (side / 2);
 
-    for (let col = 0; col < cols; col += 1) {
-      const left = offset + col * side;
+    for (let col = -colsPerHalf - 1; col <= colsPerHalf; col += 1) {
+      const left = center + offset + col * side - side / 2;
       const candidates = [
         [left, bottom, left + side / 2, top, left + side, bottom],
         [left + side / 2, top, left + (side * 3) / 2, top, left + side, bottom],
@@ -441,26 +447,67 @@ export function buildTeaLeafTriangles(field, { triangleSize } = {}) {
         if (maxX <= 0 || minX >= n) continue;
         const cx = (points[0] + points[2] + points[4]) / 3;
         const cy = (points[1] + points[3] + points[5]) / 3;
-        if (sampleField(field, cx, cy) > field.threshold) {
-          triangles.push(points);
-        }
+        panels.push({ points, on: sampleField(field, cx, cy) > field.threshold });
       }
     }
   }
 
-  return triangles;
+  return panels;
+}
+
+export function buildTeaLeafTriangles(field, options = {}) {
+  return buildTeaLeafTrianglePanels(field, options)
+    .filter((panel) => panel.on)
+    .map((panel) => panel.points);
+}
+
+function insetTriangle(points, gap) {
+  if (!(gap > 0)) return points;
+  const cx = (points[0] + points[2] + points[4]) / 3;
+  const cy = (points[1] + points[3] + points[5]) / 3;
+  const inradius = Math.hypot(points[2] - points[0], points[3] - points[1]) / (2 * Math.sqrt(3));
+  const k = Math.max(0, (inradius - gap / 2) / inradius);
+  return points.map((v, i) => (i % 2 === 0 ? cx + (v - cx) * k : cy + (v - cy) * k));
+}
+
+function resolveTriangleLayers(field, { variant, triangleCount, seam, offOpacity }) {
+  const panels = buildTeaLeafTrianglePanels(field, { triangleCount });
+  if (variant !== "triangle-panels") {
+    return { on: panels.filter((p) => p.on).map((p) => p.points), off: [], offOpacity: 0 };
+  }
+  const side = field.gridSize / resolveTriangleCount(triangleCount);
+  const gap = side * (seam ?? DEFAULT_PANEL_SEAM);
+  return {
+    on: panels.filter((p) => p.on).map((p) => insetTriangle(p.points, gap)),
+    off: panels.filter((p) => !p.on).map((p) => insetTriangle(p.points, gap)),
+    offOpacity: offOpacity ?? DEFAULT_PANEL_OFF_OPACITY,
+  };
+}
+
+function isTriangleVariant(variant) {
+  return variant === "triangle" || variant === "triangle-panels";
 }
 
 function formatCoord(value) {
   return String(Math.round(value * 1000) / 1000);
 }
 
-function createTriangleSvgPath(field, triangleSize) {
+function trianglesToSvgPath(triangles) {
   let path = "";
-  for (const t of buildTeaLeafTriangles(field, { triangleSize })) {
+  for (const t of triangles) {
     path += `M ${formatCoord(t[0])} ${formatCoord(t[1])} L ${formatCoord(t[2])} ${formatCoord(t[3])} L ${formatCoord(t[4])} ${formatCoord(t[5])} Z `;
   }
   return path.trim();
+}
+
+function traceTriangles(ctx, triangles) {
+  ctx.beginPath();
+  for (const t of triangles) {
+    ctx.moveTo(t[0], t[1]);
+    ctx.lineTo(t[2], t[3]);
+    ctx.lineTo(t[4], t[5]);
+    ctx.closePath();
+  }
 }
 
 export function createTeaLeafSvg({
@@ -470,14 +517,20 @@ export function createTeaLeafSvg({
   width,
   height,
   variant = DEFAULT_VARIANT,
-  triangleSize,
+  triangleCount,
+  seam,
+  offOpacity,
 }) {
-  if (variant === "triangle") {
+  if (isTriangleVariant(variant)) {
     const n = field.gridSize;
+    const layers = resolveTriangleLayers(field, { variant, triangleCount, seam, offOpacity });
     return [
       `<svg width="${width ?? n}" height="${height ?? n}" viewBox="0 0 ${n} ${n}" xmlns="http://www.w3.org/2000/svg">`,
       `<rect width="${n}" height="${n}" fill="${bg || "transparent"}"/>`,
-      `<path d="${createTriangleSvgPath(field, triangleSize)}" fill="${color}"/>`,
+      layers.off.length && layers.offOpacity > 0
+        ? `<path d="${trianglesToSvgPath(layers.off)}" fill="${color}" fill-opacity="${layers.offOpacity}"/>`
+        : "",
+      `<path d="${trianglesToSvgPath(layers.on)}" fill="${color}"/>`,
       "</svg>",
     ].join("");
   }
@@ -508,13 +561,16 @@ export function drawTeaLeafToCanvas({
   height,
   targetCanvas,
   variant = DEFAULT_VARIANT,
-  triangleSize,
+  triangleCount,
+  seam,
+  offOpacity,
 }) {
   const n = field.gridSize;
   const outWidth = width ?? n;
   const outHeight = height ?? n;
 
-  if (variant === "triangle") {
+  if (isTriangleVariant(variant)) {
+    const layers = resolveTriangleLayers(field, { variant, triangleCount, seam, offOpacity });
     const canvas = targetCanvas || document.createElement("canvas");
     canvas.width = outWidth;
     canvas.height = outHeight;
@@ -526,14 +582,14 @@ export function drawTeaLeafToCanvas({
       ctx.fillRect(0, 0, outWidth, outHeight);
     }
     ctx.scale(outWidth / n, outHeight / n);
-    ctx.beginPath();
-    for (const t of buildTeaLeafTriangles(field, { triangleSize })) {
-      ctx.moveTo(t[0], t[1]);
-      ctx.lineTo(t[2], t[3]);
-      ctx.lineTo(t[4], t[5]);
-      ctx.closePath();
-    }
     ctx.fillStyle = color;
+    if (layers.off.length && layers.offOpacity > 0) {
+      ctx.globalAlpha = layers.offOpacity;
+      traceTriangles(ctx, layers.off);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    traceTriangles(ctx, layers.on);
     ctx.fill();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     return canvas;
@@ -597,6 +653,9 @@ export {
   DEFAULT_FORMAT,
   DEFAULT_FREQUENCY_CUTOFF,
   DEFAULT_GRID_SIZE,
+  DEFAULT_PANEL_OFF_OPACITY,
+  DEFAULT_PANEL_SEAM,
+  DEFAULT_TRIANGLE_COUNT,
   DEFAULT_VARIANT,
   VARIANTS,
   getSeedTextFromLocation,

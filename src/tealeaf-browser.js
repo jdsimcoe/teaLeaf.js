@@ -34,7 +34,9 @@ export function renderTeaLeaf(target, options) {
       width: options.width,
       height: options.height,
       variant: options.variant,
-      triangleSize: options.triangleSize,
+      triangleCount: options.triangleCount,
+      seam: options.seam,
+      offOpacity: options.offOpacity,
     });
     target.innerHTML = svg;
     return { field, format: "svg", svg };
@@ -48,7 +50,7 @@ export function renderTeaLeaf(target, options) {
     height: options.height,
   });
 
-  canvas.style.imageRendering = options.variant === "triangle" ? "auto" : "pixelated";
+  canvas.style.imageRendering = options.variant && options.variant !== "pixel" ? "auto" : "pixelated";
   canvas.style.borderRadius = "12px";
   canvas.style.background = "transparent";
   target.innerHTML = "";
@@ -64,7 +66,9 @@ export function renderTeaLeaf(target, options) {
       width: options.width,
       height: options.height,
       variant: options.variant,
-      triangleSize: options.triangleSize,
+      triangleCount: options.triangleCount,
+      seam: options.seam,
+      offOpacity: options.offOpacity,
     }),
   };
 }

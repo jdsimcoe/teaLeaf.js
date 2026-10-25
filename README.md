@@ -11,8 +11,8 @@ npm install tealeaf-js
 ## Query Params
 
 - `format=png|svg` (default: `png`)
-- `variant=pixel|triangle` (default: `pixel`)
-- `triangleSize=<number>` triangle side in grid units (triangle variant only; default `max(2, round(gridSize / 24))`)
+- `variant=pixel|triangle|triangle-panels` (default: `pixel`)
+- `triangles=<number>` triangles across the canvas (triangle variants only; default `6`)
 - `width=<number>`
 - `height=<number>`
 - `color=<hex>` (example: `3b7a57`)
@@ -60,10 +60,11 @@ Explicit variants:
 ## Variants
 
 - `pixel` (default): the original renderer — the thresholded field drawn as pixel runs.
-- `triangle`: the same field sampled onto an equilateral triangle lattice; each triangle is filled when the field at its centroid is above the threshold. Same seed, same shape, triangle primitives instead of pixels.
+- `triangle`: a centered grid of equal equilateral triangles (`triangleCount` across, default 6); each triangle is filled when the field at its centroid is above the threshold, so neighbours merge into solid chevrons.
+- `triangle-panels`: the same grid drawn as separate panels — a seam between every triangle (`seam`, fraction of the side, default `0.06`) and "off" panels in the foreground color at `offOpacity` (default `0.14`).
 
 ```jsx
-<TeaLeaf.Root seedText="tealeaf::?hello" variant="triangle" triangleSize={14}>
+<TeaLeaf.Root seedText="tealeaf::?hello" variant="triangle-panels" triangleCount={6}>
   <TeaLeaf.Svg />
 </TeaLeaf.Root>
 ```
@@ -74,7 +75,7 @@ Core API:
 import { createTeaLeafSvg, generateTeaLeafField } from "tealeaf-js/core";
 
 const field = generateTeaLeafField({ seedText: "tealeaf::?hello", gridSize: 64 });
-const svg = createTeaLeafSvg({ field, variant: "triangle", triangleSize: 3 });
+const svg = createTeaLeafSvg({ field, variant: "triangle-panels", seam: 0.06, offOpacity: 0.14 });
 ```
 
 `TeaLeaf.Root` can also read URL params directly:

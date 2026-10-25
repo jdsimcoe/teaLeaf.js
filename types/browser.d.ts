@@ -11,7 +11,9 @@ export interface ResolvedTeaLeafOptions extends TeaLeafOptions {
   bg: string | null;
   format: TeaLeafFormat;
   variant: TeaLeafVariant;
-  triangleSize: number | null;
+  triangleCount: number | null;
+  seam?: number;
+  offOpacity?: number;
   width: number;
   height: number;
   gridSize: number;

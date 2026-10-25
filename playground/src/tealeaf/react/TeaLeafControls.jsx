@@ -32,6 +32,7 @@ export function TeaLeafControls({ className, style }) {
         >
           <option value="pixel">Pixel</option>
           <option value="triangle">Triangle</option>
+          <option value="triangle-panels">Triangle panels</option>
         </select>
       </label>
 

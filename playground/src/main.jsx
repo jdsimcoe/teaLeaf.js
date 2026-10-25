@@ -54,6 +54,7 @@ function TeaLeafControlsBar() {
           <SelectContent>
             <SelectItem value="pixel">Pixel</SelectItem>
             <SelectItem value="triangle">Triangle</SelectItem>
+            <SelectItem value="triangle-panels">Triangle panels</SelectItem>
           </SelectContent>
         </Select>
       </div>

@@ -14,7 +14,9 @@ export function TeaLeafPng(props) {
         width: state.width,
         height: state.height,
         variant: state.variant,
-        triangleSize: state.triangleSize,
+        triangleCount: state.triangleCount,
+        seam: state.seam ?? undefined,
+        offOpacity: state.offOpacity ?? undefined,
       }),
     [
       field,
@@ -23,7 +25,9 @@ export function TeaLeafPng(props) {
       state.width,
       state.height,
       state.variant,
-      state.triangleSize,
+      state.triangleCount,
+      state.seam,
+      state.offOpacity,
     ]
   );
 

@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { Lock } from "lucide-react";
 
 import { TeaLeaf, useTeaLeaf } from "./tealeaf/react/index.js";
+import { getSeedTextFromLocation } from "./tealeaf/tealeaf-core.js";
 import { Checkbox } from "./components/ui/checkbox";
 import { ColorCombobox } from "./components/ui/color-combobox";
 import { Input } from "./components/ui/input";
@@ -17,11 +18,8 @@ import {
 import "./styles.css";
 
 function getSeedFromLocation() {
-  const raw = window.location.search || "";
-  if (raw && raw !== "?") {
-    return `tealeaf::${raw}`;
-  }
-  return "tealeaf::?playground";
+  const seedText = getSeedTextFromLocation({ search: window.location.search });
+  return seedText === "tealeaf::" ? "tealeaf::?playground" : seedText;
 }
 
 function toPositiveInt(value, fallback) {
@@ -30,7 +28,7 @@ function toPositiveInt(value, fallback) {
 }
 
 function TeaLeafControlsBar() {
-  const { state, setFormat, setColor, setBackground, setSize } = useTeaLeaf();
+  const { state, setFormat, setVariant, setColor, setBackground, setSize } = useTeaLeaf();
 
   return (
     <div className="flex flex-wrap items-end gap-4">
@@ -43,6 +41,20 @@ function TeaLeafControlsBar() {
           <SelectContent>
             <SelectItem value="png">PNG</SelectItem>
             <SelectItem value="svg">SVG</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex min-w-[140px] flex-col gap-2">
+        <Label htmlFor="variant">Variant</Label>
+        <Select value={state.variant} onValueChange={setVariant}>
+          <SelectTrigger id="variant" className="w-[140px]">
+            <SelectValue placeholder="Variant" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="pixel">Pixel</SelectItem>
+            <SelectItem value="triangle">Triangle</SelectItem>
+            <SelectItem value="triangle-panels">Triangle panels</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -140,7 +152,7 @@ function App() {
             <header className="space-y-2">
               <h1 className="text-4xl tracking-tight">teaLeaf playground</h1>
               <p className="text-base text-zinc-600">
-                Configure output format, colors, and locked square size. Preview
+                Configure output format, variant, colors, and locked square size. Preview
                 updates live.
               </p>
             </header>

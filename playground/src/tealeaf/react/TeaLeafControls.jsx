@@ -1,7 +1,7 @@
 import { useTeaLeaf } from "./TeaLeafContext.jsx";
 
 export function TeaLeafControls({ className, style }) {
-  const { state, setFormat, setColor, setBackground, setWidth, setHeight } = useTeaLeaf();
+  const { state, setFormat, setVariant, setColor, setBackground, setWidth, setHeight } = useTeaLeaf();
 
   return (
     <div
@@ -21,6 +21,18 @@ export function TeaLeafControls({ className, style }) {
         >
           <option value="png">PNG</option>
           <option value="svg">SVG</option>
+        </select>
+      </label>
+
+      <label>
+        Variant
+        <select
+          value={state.variant}
+          onChange={(event) => setVariant(event.target.value)}
+        >
+          <option value="pixel">Pixel</option>
+          <option value="triangle">Triangle</option>
+          <option value="triangle-panels">Triangle panels</option>
         </select>
       </label>
 

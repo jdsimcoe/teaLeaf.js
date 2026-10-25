@@ -13,8 +13,22 @@ export function TeaLeafPng(props) {
         bg: state.bg,
         width: state.width,
         height: state.height,
+        variant: state.variant,
+        triangleCount: state.triangleCount,
+        seam: state.seam ?? undefined,
+        offOpacity: state.offOpacity ?? undefined,
       }),
-    [field, state.color, state.bg, state.width, state.height]
+    [
+      field,
+      state.color,
+      state.bg,
+      state.width,
+      state.height,
+      state.variant,
+      state.triangleCount,
+      state.seam,
+      state.offOpacity,
+    ]
   );
 
   return (
@@ -25,7 +39,7 @@ export function TeaLeafPng(props) {
       height={state.height}
       alt={props.alt || "TeaLeaf PNG"}
       style={{
-        imageRendering: "pixelated",
+        imageRendering: state.variant === "pixel" ? "pixelated" : "auto",
         ...(props.style || {}),
       }}
     />

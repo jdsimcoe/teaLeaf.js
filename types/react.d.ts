@@ -1,11 +1,15 @@
 import type * as React from "react";
-import type { TeaLeafField, TeaLeafFormat } from "./core";
+import type { TeaLeafField, TeaLeafFormat, TeaLeafVariant } from "./core";
 
 export interface TeaLeafState {
   seedText: string;
   color: string;
   bg: string | null;
   format: TeaLeafFormat;
+  variant: TeaLeafVariant;
+  triangleCount: number | null;
+  seam: number | null;
+  offOpacity: number | null;
   width: number;
   height: number;
   gridSize: number;
@@ -17,6 +21,8 @@ export interface TeaLeafSetOptionsInput {
   color?: string;
   bg?: string | null;
   format?: TeaLeafFormat;
+  variant?: TeaLeafVariant;
+  triangleCount?: number | null;
   width?: number;
   height?: number;
 }
@@ -26,6 +32,8 @@ export interface TeaLeafContextValue {
   field: TeaLeafField;
   setSeedText(seed: string): void;
   setFormat(format: TeaLeafFormat): void;
+  setVariant(variant: TeaLeafVariant): void;
+  setTriangleCount(count: number | null): void;
   setColor(color: string): void;
   setBackground(bg: string | null): void;
   setSize(width: number, height?: number): void;
@@ -40,6 +48,10 @@ export interface TeaLeafRootProps {
   querySearch?: string;
   gridSize?: number;
   frequencyCutoff?: number;
+  variant?: TeaLeafVariant;
+  triangleCount?: number | null;
+  seam?: number;
+  offOpacity?: number;
   options?: TeaLeafSetOptionsInput;
 }
 

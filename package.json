@@ -38,7 +38,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && tsup && node ./scripts/copy-types.mjs",
-    "prepublishOnly": "npm run build",
+    "prepare": "npm run build",
     "playground:install": "npm --prefix ./playground install",
     "playground:dev": "npm --prefix ./playground run dev",
     "playground:build": "npm --prefix ./playground run build",
